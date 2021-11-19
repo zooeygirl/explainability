@@ -7,16 +7,18 @@ import torch.nn as nn
 from typing import List, Any
 import torch
 from BERT_rationale_benchmark.models.model_utils import PaddedSequence
+import transformers
 
 
 class BertForSequenceClassification(BertPreTrainedModel):
-    def __init__(self, config):
+    def __init__(self, config, idx):
         super().__init__(config)
         self.num_labels = config.num_labels
 
         self.bert = BertModel(config)
         self.dropout = Dropout(config.hidden_dropout_prob)
-        self.classifier = Linear(config.hidden_size, config.num_labels)
+        self.fc = Linear(config.hidden_size, config.num_labels)
+        self.idx = idx
 
         self.init_weights()
 
@@ -54,10 +56,12 @@ class BertForSequenceClassification(BertPreTrainedModel):
             return_dict=return_dict,
         )
 
-        pooled_output = outputs[1]
+
+        pooled_output = outputs[0][:,self.idx]
+        #pooled_output = outputs[1]
 
         pooled_output = self.dropout(pooled_output)
-        logits = self.classifier(pooled_output)
+        logits = self.fc(pooled_output)
 
         loss = None
         if labels is not None:
@@ -73,7 +77,8 @@ class BertForSequenceClassification(BertPreTrainedModel):
             output = (logits,) + outputs[2:]
             return ((loss,) + output) if loss is not None else output
 
-        return SequenceClassifierOutput(
+        return transformers.modeling_outputs.SequenceClassifierOutput(
+        #return SequenceClassifierOutput(
             loss=loss,
             logits=logits,
             hidden_states=outputs.hidden_states,
@@ -81,7 +86,7 @@ class BertForSequenceClassification(BertPreTrainedModel):
         )
 
     def relprop(self, cam=None, **kwargs):
-        cam = self.classifier.relprop(cam, **kwargs)
+        cam = self.fc.relprop(cam, **kwargs)
         cam = self.dropout.relprop(cam, **kwargs)
         cam = self.bert.relprop(cam, **kwargs)
         # print("conservation: ", cam.sum())
