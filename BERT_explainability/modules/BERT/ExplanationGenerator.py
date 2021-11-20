@@ -23,11 +23,11 @@ class Generator:
         self.model.eval()
 
     def forward(self, input_ids, attention_mask):
-        return self.model(input_ids, attention_mask)
+        return self.model(input_ids, attention_mask, idx)
 
     def generate_LRP(self, input_ids, attention_mask,
-                     index=None, start_layer=11):
-        output = self.model(input_ids=input_ids, attention_mask=attention_mask)[0]
+                     index=None, start_layer=11, idx=idx):
+        output = self.model(input_ids=input_ids, attention_mask=attention_mask, idx)[0]
         kwargs = {"alpha": 1}
 
         if index == None:
@@ -153,4 +153,3 @@ class Generator:
         cam = (cam - cam.min()) / (cam.max() - cam.min())
         cam[:, 0, 0] = 0
         return cam[:, 0]
-
