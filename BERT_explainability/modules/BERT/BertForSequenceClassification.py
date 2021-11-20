@@ -11,14 +11,13 @@ import transformers
 
 
 class BertForSequenceClassification(BertPreTrainedModel):
-    def __init__(self, config, idx):
+    def __init__(self, config):
         super().__init__(config)
         self.num_labels = config.num_labels
 
         self.bert = BertModel(config)
         self.dropout = Dropout(config.hidden_dropout_prob)
-        self.fc = Linear(config.hidden_size, config.num_labels)
-        self.idx = idx
+        self.fc = Linear(config.hidden_size, 5)#config.num_labels)
 
         self.init_weights()
 
@@ -34,6 +33,7 @@ class BertForSequenceClassification(BertPreTrainedModel):
             output_attentions=None,
             output_hidden_states=None,
             return_dict=None,
+            idx=None,
     ):
         r"""
         labels (:obj:`torch.LongTensor` of shape :obj:`(batch_size,)`, `optional`):
@@ -57,7 +57,7 @@ class BertForSequenceClassification(BertPreTrainedModel):
         )
 
 
-        pooled_output = outputs[0][:,self.idx]
+        pooled_output = outputs[0][:,idx]
         #pooled_output = outputs[1]
 
         pooled_output = self.dropout(pooled_output)
