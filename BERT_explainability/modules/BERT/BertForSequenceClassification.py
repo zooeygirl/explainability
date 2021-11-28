@@ -2,6 +2,7 @@ from transformers import BertPreTrainedModel
 from transformers.utils import logging
 from BERT_explainability.modules.layers_ours import *
 from BERT_explainability.modules.BERT.BERT import BertModel
+from BERT_explainability.modules.BERT.GPT2 import GPT2Model
 from torch.nn import CrossEntropyLoss, MSELoss
 import torch.nn as nn
 from typing import List, Any
@@ -16,6 +17,7 @@ class BertForSequenceClassification(BertPreTrainedModel):
         self.num_labels = config.num_labels
 
         self.bert = BertModel(config)
+        self.bert = GPT2Model.from_pretrained('gpt2')
         self.dropout = Dropout(config.hidden_dropout_prob)
         self.fc = Linear(config.hidden_size, 5)#config.num_labels)
 
