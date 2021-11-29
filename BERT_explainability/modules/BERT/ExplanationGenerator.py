@@ -26,12 +26,14 @@ class Generator:
         return self.model(input_ids, attention_mask, idx)
 
     def generate_LRP(self, input_ids, attention_mask,
-                     index=None, start_layer=11, idx=idx):
-        output = self.model(input_ids=input_ids, attention_mask=attention_mask, idx)[0]
+                     index=None, start_layer=11, idx=None):
+        output = self.model(input_ids=input_ids, attention_mask=attention_mask, idx=idx)[0]
         kwargs = {"alpha": 1}
 
         if index == None:
             index = np.argmax(output.cpu().data.numpy(), axis=-1)
+        print('argmax',index)
+        print(output.cpu().data.numpy())
 
         one_hot = np.zeros((1, output.size()[-1]), dtype=np.float32)
         one_hot[0, index] = 1
